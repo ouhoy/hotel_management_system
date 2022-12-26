@@ -1,27 +1,44 @@
-# user_name = input("What is your name ").strip()
-# user_address = input("What is you address ")
-# checkin_date = input("When is your preferable check-in date? ")
-# checkout_date = input("When is your preferable check-out date? ")
-# print("There are 3 types of rooms in this hotel, please pick one in the menu.")
-#
-# room_type = input("")
-# nights_spent_number = input("How many nights are you going to stay in here? ")
+def num_input_validation(input_req, rng=False):
+    num = input(input_req)
+    if num.isnumeric():
+        num = int(num)
+        if rng and num in rng:
+            return int(num)
+        elif not rng:
+            return int(num)
+
+    print("Please put a valid number")
+    return num_input_validation(input_req, rng)
 
 
-class User:
-    def __init__(self, user_name, user_address):
-        self.user_name = user_name
-        self.user_address = user_address
+bill = {
+    "restaurant": 0
+}
+
+x = 0
+
+while 3 > x:
+    x += 1
+
+    def get_food():
+        food_menu = {
+            1: {"name": "ItemOne", "price": 12},
+            2: {"name": "ItemTwo", "price": 82},
+            3: {"name": "ItemThree", "price": 15},
+            4: {"name": "ItemFour", "price": 18},
+            5: {"name": "ItemFive", "price": 35},
+            6: {"name": "ItemSix", "price": 23},
+        }
+
+        for key, value in food_menu.items():
+            print(f'{key}) {value["name"]} - ${value["price"]}')
+        chosen_item = num_input_validation("Please choose an item from the list. Put in a number between 1 to 6: ",
+                                           range(1, 7))
+        item_price = food_menu[chosen_item]["price"]
+        bill["restaurant"] += item_price
+        return item_price
 
 
-class RoomRent:
-    def __init__(self, room_type, checkin, checkout):
-        self.room_type = room_type
-        self.checkin = checkin
-        self.checkout = checkout
+    get_food()
 
-
-class HotelServices:
-    def __init__(self, service):
-        self.service = service
-
+print("bills ", bill["restaurant"])
