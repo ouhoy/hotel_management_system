@@ -117,3 +117,5 @@ bill["laundry"] += laundry_service["price"]
 print("Here it is done")
 
 print(customer_details)
+
+print("Test form GitHub")
