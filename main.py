@@ -18,7 +18,7 @@ bill = {
 
 total = 0
 
-# TODO: 3) fix lang here
+# TODO: 3) fix lang
 room_types = [{"item": "roomTypeOne", "price": 8},
               {"item": "roomTypeTwo", "price": 15},
               {"item": "roomTypeThree", "price": 24},
@@ -60,7 +60,8 @@ def date_validation(prompt_string):
     day = int(date[0])
     month = int(date[1])
     year = int(date[2])
-    # If the used checked for an earlier date from today
+
+    # If the user checked for an earlier date from the check-in date
     if "check-in" in customer_details:
         try:
 
@@ -108,16 +109,49 @@ def room_checkin():
         "desired room type from the list: ",
         ls=room_types)
     # TODO: 2) Don't forget the room service as an additional charge
-    # TODO: 4) print service log
+
+    # Confirm user choice
+    print("You have selected: ")
+    print(f'Chosen Room Type: {room_types[chosen_item]["item"]}')
+    print(f'Price per night: ${room_types[chosen_item]["price"]}')
+    if select_again("Do you want to edit your inputs? "):
+        return room_checkin()
+    # Room bill
+    print("** Rent Details **")
+    print(f'Chosen Room Type: {room_types[chosen_item]["item"]}')
+    print(f'Price per night: ${room_types[chosen_item]["price"]}')
+    print(f'Stay duration: {customer_details["nights_spent"]} days')
+    print(f'Total:, ${room_types[chosen_item]["price"] * customer_details["nights_spent"]} ')
     return room_types[chosen_item]
 
 
+def select_again(prompt_string):
+    selection = input(f"{prompt_string} If yes type Y otherwise hit enter to continue: ").strip().lower()
+    if selection == "y":
+        return True
+    return False
+
+
 def get_food():
+
     # Print all the items in the menu
     print_priced_items(food_menu)
     chosen_item = num_input_validation(
-        "Kindly make your selection by inputting a number between 1 and 6 from the food menu options provided: ",
+        f"Kindly make your selection by inputting a number between 1 and {len(food_menu)} from the food menu options provided: ",
         ls=food_menu)
+
+    # Confirm user choice
+    print("You have selected: ")
+    print(f"Chosen dish: {food_menu[chosen_item]['item']} ")
+    print(f"Total: ${food_menu[chosen_item]['price']} ")
+    if select_again("Do you want to edit your inputs? "):
+        return get_food()
+
+    # The print the bill
+    print("** Restaurant Bill **")
+    print(f"Chosen dish: {food_menu[chosen_item]['item']} ")
+    print(f"Total: ${food_menu[chosen_item]['price']} ")
+
     return food_menu[chosen_item]
     # TODO: 1)  Don't forget the tep as an additional charge
 
@@ -125,10 +159,18 @@ def get_food():
 def laundry():
     print("We offer four types of laundry")
     print_priced_items(laundry_types)
-    chosen_laundry_type = num_input_validation("Please enter the desired laundry type: ", laundry_types)
-    quantity = num_input_validation("Please enter the desired laundry quantity: ", False)
+    chosen_laundry_type = num_input_validation(
+        f"Please enter the number of the desired laundry type from 1 to {len(laundry_types)}: ", laundry_types)
+    quantity = num_input_validation("Please enter the desired laundry quantity nothing above 20: ", range(1, 21))
     price = laundry_types[chosen_laundry_type]["price"] * quantity
 
+    print("You have selected: ")
+    print(f"Chosen laundry type: {laundry_types[chosen_laundry_type]['item']} ")
+    print(f"quantity: {quantity} ")
+    if select_again("Do you want to edit your inputs? "):
+        return laundry()
+    # Laundry bill
+    print("** Laundry Bill **")
     print(f"Chosen laundry type: {laundry_types[chosen_laundry_type]['item']} ")
     print(f"quantity: {quantity} ")
     print(f"Total: ${price} ")
@@ -140,6 +182,9 @@ def game():
     pass
 
 
+def get_customer_data():
+    pass
+
 customer_details["user_name"] = name_validation("Write customer's name: ")
 customer_details["user_address"] = input("Write the customer's address: ")
 
@@ -149,11 +194,14 @@ customer_details["check-in"] = checkin_date
 checkout_date = date_validation("Check-out date: ")
 customer_details["check-out"] = checkout_date
 
+
+
 customer_details["nights_spent"] = (datetime.date(checkout_date["year"], checkout_date["month"],
                                                   checkout_date["day"]) - datetime.date(
     checkin_date["year"], checkin_date["month"], checkin_date["day"])).days
 
 ##### Functional Area #####
+
 # Get room:
 get_room = room_checkin()
 customer_details["chosen_room"] = get_room
@@ -171,22 +219,21 @@ while True:
         ordered_food = get_food()
         customer_details["ordered_food"].append(ordered_food)
         bill["restaurant"] += ordered_food["price"]
+        if select_again("Would you like to order again? "):
+            ordered_food = get_food()
+            customer_details["ordered_food"].append(ordered_food)
+            bill["restaurant"] += ordered_food["price"]
+        continue
 
     # Do laundry
     if service == 1:
         laundry_service = laundry()
         customer_details["laundry"].append(laundry_service)
         bill["laundry"] += laundry_service["price"]
+        continue
+
     if service == 2:
         break
-
-# Calc total
-
-# for food in customer_details["ordered_food"]:
-#     bill["restaurant"] += food["price"]
-#
-# for washed in customer_details["laundry"]:
-#     bill["laundry"] += washed["price"]
 
 for expense in bill:
     total += bill[expense]
@@ -217,6 +264,7 @@ def print_total_cost():
     # laundry
     print("Laundry bill: ")
     for item in customer_details["laundry"]:
+        # TODO: Fix this:
         print(item)
         # print(f"-{item['item']}, {item['price']}. ")
     print("Laundry total: ", bill["laundry"])
