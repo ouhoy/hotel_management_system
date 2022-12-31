@@ -48,11 +48,11 @@ def name_validation(prompt_string):
     return name
 
 
-def date_validation(prompt_string, date_type="date"):
+def date_validation(prompt_string):
     date = input(prompt_string).strip().split("-")
     for n in date:
         if not n.isnumeric():
-            print(f"Please, make sure that the {date_type} does not contain any characters or spaces.")
+            print(f"Please, make sure that the date does not contain any characters or spaces.")
             return date_validation(prompt_string)
     if len(date[2]) != 4:
         print("Please put in the year in this format yyyy")
@@ -67,7 +67,7 @@ def date_validation(prompt_string, date_type="date"):
             dates = datetime.date(year, month, day) - datetime.date(checkin_date["year"], checkin_date["month"],
                                                                     checkin_date["day"])
             if 0 > dates.days:
-                print(f"Enter a valid {date_type} up to one day from today")
+                print(f"Enter a valid date at least one day from the check-in date")
                 return date_validation(prompt_string)
         except Exception as e:
             print(e)
@@ -75,7 +75,7 @@ def date_validation(prompt_string, date_type="date"):
     try:
         date_calc = datetime.date.today() - datetime.date(year, month, day)
         if date_calc.days > 0:
-            print(f"Enter a valid {date_type} up to one day from today")
+            print(f"Enter a valid date up to one day from today")
             return date_validation(prompt_string)
     except Exception as e:
         print(e)
@@ -83,17 +83,16 @@ def date_validation(prompt_string, date_type="date"):
     return {"day": day, "month": month, "year": year}
 
 
-def num_input_validation(prompt_string, rng=range(0)):
+def num_input_validation(prompt_string, ls):
     num = input(prompt_string).strip()
     if num.isnumeric():
-
-        if len(rng) > 0 and int(num) in rng:
-            return int(num)
-        elif not rng:
+        if ls and int(num) in range(1, len(ls) + 1):
+            return int(num) - 1
+        elif not ls:
             return int(num)
 
     print("Please put a valid number")
-    return num_input_validation(prompt_string, rng)
+    return num_input_validation(prompt_string, ls)
 
 
 def print_priced_items(ls):
@@ -106,10 +105,11 @@ def room_checkin():
     print_priced_items(room_types)
     chosen_item = num_input_validation(
         "In order to make your selection, please input a number between 1 and 4 corresponding to the "
-        "desired room type from the list.",
-        rng=range(1, len(room_types) + 1))
+        "desired room type from the list: ",
+        ls=room_types)
     # TODO: 2) Don't forget the room service as an additional charge
-    return room_types[chosen_item - 1]
+    # TODO: 4) print service log
+    return room_types[chosen_item]
 
 
 def get_food():
@@ -117,17 +117,16 @@ def get_food():
     print_priced_items(food_menu)
     chosen_item = num_input_validation(
         "Kindly make your selection by inputting a number between 1 and 6 from the food menu options provided: ",
-        rng=range(1, len(food_menu) + 1))
-    return food_menu[chosen_item - 1]
+        ls=food_menu)
+    return food_menu[chosen_item]
     # TODO: 1)  Don't forget the tep as an additional charge
 
 
 def laundry():
     print("We offer four types of laundry")
     print_priced_items(laundry_types)
-    chosen_laundry_type = num_input_validation("Please enter the desired laundry type: ",
-                                               range(1, len(laundry_types) + 1))
-    quantity = num_input_validation("Please enter the desired laundry quantity: ")
+    chosen_laundry_type = num_input_validation("Please enter the desired laundry type: ", laundry_types)
+    quantity = num_input_validation("Please enter the desired laundry quantity: ", False)
     price = laundry_types[chosen_laundry_type]["price"] * quantity
 
     print(f"Chosen laundry type: {laundry_types[chosen_laundry_type]['item']} ")
@@ -165,20 +164,20 @@ while True:
     user_functions = ["Order food", "Do laundry", "Print the bill"]
     for i in range(len(user_functions)):
         print(f"{i + 1}) {user_functions[i]} ")
-    service = num_input_validation("Get served: ", range(1, len(user_functions) + 1))
+    service = num_input_validation("Get served: ", user_functions)
 
     # Order food
-    if service == 1:
+    if service == 0:
         ordered_food = get_food()
         customer_details["ordered_food"].append(ordered_food)
         bill["restaurant"] += ordered_food["price"]
 
     # Do laundry
-    if service == 2:
+    if service == 1:
         laundry_service = laundry()
         customer_details["laundry"].append(laundry_service)
         bill["laundry"] += laundry_service["price"]
-    if service == 3:
+    if service == 2:
         break
 
 # Calc total
