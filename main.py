@@ -150,8 +150,7 @@ def get_food():
 
     # Confirm user choice
     print("You have selected: ")
-    print(f"Chosen dish: {food_menu[chosen_item]['item']} ")
-    print(f"Total: ${food_menu[chosen_item]['price']} ")
+    print(f"Chosen dish: {food_menu[chosen_item]['item']} - ${food_menu[chosen_item]['price']}")
     if select_again("Do you want to edit your inputs? "):
         return get_food()
 
@@ -197,24 +196,25 @@ def get_customer_data():
     checkout_date = date_validation("Please enter the check-out date following this format dd-mm-yyyy: ", "check-out",
                                     checkin_date)
     night_stay = (checkout_date - checkin_date).days
+
+    print("\n** Customer's entered data **\n")
+
+    print(f"Customer Name: {user_name}")
+    print(f"Customer Address: {user_address}")
+    print(
+        f"Check-in Date: {checkin_date.day}-{checkin_date.month}-{checkin_date.year}")
+    print(
+        f"Check-out Date: {checkout_date.day}-{checkout_date.month}-{checkout_date.year}")
+
+    if select_again("Do you want to edit customer's details? "):
+        get_customer_data()
+
     return {"user_name": user_name, "user_address": user_address, "checkin_date": checkin_date,
             "checkout_date": checkout_date, "nights_spent": night_stay}
 
 
 customer_deta = get_customer_data()
 customer_details.update(customer_deta)
-
-"""customer_details["user_name"] = name_validation("Write customer's name: ")
-customer_details["user_address"] = input("Write the customer's address: ")"""
-
-# Get and save the check-in and check-out dates
-"""checkin_date = date_validation("Please enter the check-in date following this format dd-mm-yyyy: ")
-customer_details["check-in"] = {"year": checkin_date.year, "month": checkin_date.month, "day": checkin_date.day}
-
-checkout_date = date_validation("Please enter the check-out date following this format dd-mm-yyyy: ")
-customer_details["check-out"] = {"year": checkout_date.year, "month": checkout_date.month, "day": checkout_date.day}
-
-customer_details["nights_spent"] = (checkout_date - checkin_date).days"""
 
 ##### Functional Area #####
 
@@ -264,6 +264,7 @@ def print_total_cost():
         f"Check-in Date: {customer_details['checkin_date'].day}-{customer_details['checkin_date'].month}-{customer_details['checkin_date'].year}")
     print(
         f"Check-out Date: {customer_details['checkout_date'].day}-{customer_details['checkout_date'].month}-{customer_details['checkout_date'].year}")
+    # TODO fix this
     print("Chosen Room Type: ", customer_details["chosen_room"])
     print("Number of nights spent: ", customer_details["nights_spent"])
     # Customer's Bill
