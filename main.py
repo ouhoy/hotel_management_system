@@ -1,6 +1,18 @@
 import datetime
 import os
 
+art = """
+  _    _       _       _                                                               _                   _                 
+ | |  | |     | |     | |                                                             | |                 | |                
+ | |__| | ___ | |_ ___| |  _ __ ___   __ _ _ __   __ _  __ _  ___ _ __ ___   ___ _ __ | |_   ___ _   _ ___| |_ ___ _ __ ___  
+ |  __  |/ _ \| __/ _ \ | | '_ ` _ \ / _` | '_ \ / _` |/ _` |/ _ \ '_ ` _ \ / _ \ '_ \| __| / __| | | / __| __/ _ \ '_ ` _ \ 
+ | |  | | (_) | ||  __/ | | | | | | | (_| | | | | (_| | (_| |  __/ | | | | |  __/ | | | |_  \__ \ |_| \__ \ ||  __/ | | | | |
+ |_|  |_|\___/ \__\___|_| |_| |_| |_|\__,_|_| |_|\__,_|\__, |\___|_| |_| |_|\___|_| |_|\__| |___/\__, |___/\__\___|_| |_| |_|
+                                                        __/ |                                     __/ |                      
+                                                       |___/                                     |___/                       
+"""
+print(art)
+
 
 def cls():
     os.system('cls' if os.name == 'nt' else 'clear')
@@ -60,23 +72,28 @@ def name_validation(prompt_string):
 
 def date_validation(prompt_string, date_type, checkin_date):
     date = input(prompt_string).strip().split("-")
+
+    day = int(date[0])
+    month = int(date[1])
+    year = int(date[2])
+    year_expected_length = 4
+
+    # Validate inputs' data type
     for n in date:
         if not n.isnumeric():
             print(f"Please, make sure that the date does not contain any characters or spaces.")
             return date_validation(prompt_string, date_type, checkin_date)
-    if len(date[2]) != 4:
+
+    if len(str(year)) != year_expected_length:
         print("Please put in the year in this format yyyy")
         return date_validation(prompt_string, date_type, checkin_date)
-    day = int(date[0])
-    month = int(date[1])
-    year = int(date[2])
 
     # If the user checked for an earlier date from the check-in date
     if date_type == "check-out":
         try:
             dates = datetime.date(year, month, day) - checkin_date
             if 0 > dates.days:
-                print(f"Enter a valid date at least one day from the check-in date")
+                print(f"Enter a valid date at least one day from the check-in date: {checkin_date}")
                 return date_validation(prompt_string, date_type, checkin_date)
         except Exception as e:
             print(e)
@@ -100,7 +117,7 @@ def num_input_validation(prompt_string, ls):
         elif not ls:
             return int(num)
 
-    print("Please put a valid number")
+    print(f"Please put a valid number")
     return num_input_validation(prompt_string, ls)
 
 
