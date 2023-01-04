@@ -58,10 +58,10 @@ laundry_types = [{"item": "Normal laundry", "price": 2},
 # Data validation functions
 def name_validation(prompt_string):
     name = input(prompt_string).lower().strip()
-    if len(name) > 512:
+    if len(name) > 64:
         print("name too long")
         return name_validation(prompt_string)
-    if len(name) < 3:
+    if len(name) < 2:
         print("name too short")
         return name_validation(prompt_string)
     if not name.replace(" ", "").isalpha():
@@ -89,6 +89,7 @@ def date_validation(prompt_string, date_type, checkin_date):
         return date_validation(prompt_string, date_type, checkin_date)
 
     # If the user checked for an earlier date from the check-in date
+    # TODO check stay duration
     if date_type == "check-out":
         try:
             dates = datetime.date(year, month, day) - checkin_date
@@ -207,7 +208,8 @@ def game():
 
 
 def get_customer_data():
-    user_name = name_validation("Write customer's name: ")
+    guest_first_name = name_validation("Write customer's first name: ")
+    guest_last_name = name_validation("Write customer's last name: ")
     user_address = input("Write the customer's address: ")
     checkin_date = date_validation("Please enter the check-in date following this format dd-mm-yyyy: ", "check-in", "")
     checkout_date = date_validation("Please enter the check-out date following this format dd-mm-yyyy: ", "check-out",
@@ -216,7 +218,8 @@ def get_customer_data():
 
     print("\n** Customer's entered data **\n")
 
-    print(f"Customer Name: {user_name}")
+    print(f"Customer First Name: {guest_first_name}")
+    print(f"Customer Last Name: {guest_last_name}")
     print(f"Customer Address: {user_address}")
     print(
         f"Check-in Date: {checkin_date.day}-{checkin_date.month}-{checkin_date.year}")
@@ -226,7 +229,8 @@ def get_customer_data():
     if select_again("Do you want to edit customer's details? "):
         get_customer_data()
 
-    return {"user_name": user_name, "user_address": user_address, "checkin_date": checkin_date,
+    return {"first_name": guest_first_name, "last_name": guest_last_name, "user_address": user_address,
+            "checkin_date": checkin_date,
             "checkout_date": checkout_date, "nights_spent": night_stay}
 
 
@@ -242,6 +246,7 @@ customer_details["room_rent"] = customer_details["nights_spent"] * get_room["pri
 bill["room_rent"] = customer_details["nights_spent"] * get_room["price"]
 
 while True:
+    # TODO fix lang here
     user_functions = ["Order food", "Do laundry", "Print the bill"]
     for i in range(len(user_functions)):
         print(f"{i + 1}) {user_functions[i]} ")
@@ -275,7 +280,8 @@ for expense in bill:
 def print_total_cost():
     # Customer details
     print("\n**** Customer details ****\n")
-    print("Customer Name: ", customer_details["user_name"])
+    print("Customer First Name: ", customer_details["first_name"])
+    print("Customer Last Name: ", customer_details["last_name"])
     print("Customer Address: ", customer_details["user_address"])
     print(
         f"Check-in Date: {customer_details['checkin_date'].day}-{customer_details['checkin_date'].month}-{customer_details['checkin_date'].year}")
