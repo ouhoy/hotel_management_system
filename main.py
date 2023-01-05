@@ -70,7 +70,7 @@ def name_validation(prompt_string: str) -> str:
     return name
 
 
-def date_validation(prompt_string: str, date_type: str, checkin_date):
+def date_validation(prompt_string: str, date_type: str, checkin_date: str or datetime) -> datetime:
     date = input(prompt_string).strip().split("-")
 
     day = int(date[0])
@@ -110,7 +110,7 @@ def date_validation(prompt_string: str, date_type: str, checkin_date):
     return datetime.date(year, month, day)
 
 
-def num_input_validation(prompt_string: str, ls: list) -> int:
+def num_input_validation(prompt_string: str, ls: range or list) -> int:
     num = input(prompt_string).strip()
     if num.isnumeric():
         if ls and int(num) in range(1, len(ls) + 1):
@@ -135,7 +135,7 @@ def print_priced_items(ls: list):
 
 
 # Hotel services functions
-def room_checkin():
+def room_checkin() -> dict:
     print("Our luxurious accommodations include a selection of four opulent room types to choose from: ")
     print_priced_items(room_types)
     chosen_item = num_input_validation(
@@ -159,7 +159,7 @@ def room_checkin():
     return room_types[chosen_item]
 
 
-def get_food():
+def get_food() -> dict:
     # Print all the items in the menu
     print_priced_items(food_menu)
     chosen_item = num_input_validation(
@@ -181,7 +181,7 @@ def get_food():
     # TODO: 1)  Don't forget the tep as an additional charge
 
 
-def laundry():
+def laundry() -> dict:
     print("We offer four types of laundry")
     print_priced_items(laundry_types)
     chosen_laundry_type = num_input_validation(
@@ -207,9 +207,10 @@ def game():
     pass
 
 
-def get_customer_data():
+def get_customer_data() -> dict:
     guest_first_name = name_validation("Write customer's first name: ")
     guest_last_name = name_validation("Write customer's last name: ")
+    #TODO fix the address
     user_address = input("Write the customer's address: ")
     checkin_date = date_validation("Please enter the check-in date following this format dd-mm-yyyy: ", "check-in", "")
     checkout_date = date_validation("Please enter the check-out date following this format dd-mm-yyyy: ", "check-out",
