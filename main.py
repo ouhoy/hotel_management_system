@@ -56,7 +56,7 @@ laundry_types = [{"item": "Normal laundry", "price": 2},
 
 
 # Data validation functions
-def name_validation(prompt_string):
+def name_validation(prompt_string: str) -> str:
     name = input(prompt_string).lower().strip()
     if len(name) > 64:
         print("name too long")
@@ -70,7 +70,7 @@ def name_validation(prompt_string):
     return name
 
 
-def date_validation(prompt_string, date_type, checkin_date):
+def date_validation(prompt_string: str, date_type: str, checkin_date):
     date = input(prompt_string).strip().split("-")
 
     day = int(date[0])
@@ -110,7 +110,7 @@ def date_validation(prompt_string, date_type, checkin_date):
     return datetime.date(year, month, day)
 
 
-def num_input_validation(prompt_string, ls):
+def num_input_validation(prompt_string: str, ls: list) -> int:
     num = input(prompt_string).strip()
     if num.isnumeric():
         if ls and int(num) in range(1, len(ls) + 1):
@@ -122,14 +122,14 @@ def num_input_validation(prompt_string, ls):
     return num_input_validation(prompt_string, ls)
 
 
-def select_again(prompt_string):
+def select_again(prompt_string: str) -> bool:
     selection = input(f"{prompt_string} If yes type Y otherwise hit enter to continue: ").strip().lower()
     if selection == "y":
         return True
     return False
 
 
-def print_priced_items(ls):
+def print_priced_items(ls: list):
     for item in range(len(ls)):
         print(f'{item + 1}) {ls[item]["item"]} - ${ls[item]["price"]}')
 
