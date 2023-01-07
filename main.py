@@ -1,5 +1,6 @@
 import datetime
 import os
+import re
 
 art = """
   _    _       _       _                                                               _                   _                 
@@ -14,8 +15,30 @@ art = """
 print(art)
 
 
+def check_email(prompt_string: str) -> str:
+    email = input(prompt_string)
+    pat = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
+    if re.match(pat, email):
+        return email
+    else:
+        print("Please enter a valid email.")
+        return check_email(prompt_string)
+
+
 def cls():
     os.system('cls' if os.name == 'nt' else 'clear')
+
+
+class Bcolors:
+    HEADER = '\033[95m'
+    INFO = '\033[94m'
+    OK_CYAN = '\033[96m'
+    OK_GREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    END = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
 
 
 customer_details = {
@@ -38,7 +61,6 @@ bill = {
 }
 
 total = 0
-
 # TODO: 3) fix lang
 room_types = [{"item": "roomTypeOne", "price": 8},
               {"item": "roomTypeTwo", "price": 15},
@@ -56,34 +78,45 @@ laundry_types = [{"item": "Normal laundry", "price": 2},
 
 
 # Data validation functions
+
+# TODO color error validation
+
 def name_validation(prompt_string: str) -> str:
     name = input(prompt_string).lower().strip()
-    if len(name) > 64:
-        print("name too long")
+    if not name:
+        print("Please enter a valid name")
         return name_validation(prompt_string)
-    if len(name) < 2:
-        print("name too short")
-        return name_validation(prompt_string)
+
+    # Check if name includes alphabetical characters only
     if not name.replace(" ", "").isalpha():
         print("Make sure that your name does not contain any numbers or symbols.")
         return name_validation(prompt_string)
+
+    if len(name) > 64:
+        print("The entered name is too long, please enter a valid name that doe not exceed 64 characters in count.")
+        return name_validation(prompt_string)
+    if len(name) < 1:
+        print("The entered name is too short, please enter a valid name that doe not go under 1 character in count.")
+        return name_validation(prompt_string)
+
     return name
 
 
+# TODO color error validation
 def date_validation(prompt_string: str, date_type: str, checkin_date: str or datetime) -> datetime:
     date = input(prompt_string).strip().split("-")
 
-    day = int(date[0])
-    month = int(date[1])
-    year = int(date[2])
     year_expected_length = 4
 
     # Validate inputs' data type
     for n in date:
         if not n.isnumeric():
-            print(f"Please, make sure that the date does not contain any characters or spaces.")
+            print(
+                f"{Bcolors.WARNING}Please, make sure that the {date_type} does not contain any characters or spaces. {Bcolors.END}")
             return date_validation(prompt_string, date_type, checkin_date)
-
+    day = int(date[0])
+    month = int(date[1])
+    year = int(date[2])
     if len(str(year)) != year_expected_length:
         print("Please put in the year in this format yyyy")
         return date_validation(prompt_string, date_type, checkin_date)
@@ -110,6 +143,7 @@ def date_validation(prompt_string: str, date_type: str, checkin_date: str or dat
     return datetime.date(year, month, day)
 
 
+# TODO color error validation
 def num_input_validation(prompt_string: str, ls: range or list) -> int:
     num = input(prompt_string).strip()
     if num.isnumeric():
@@ -123,7 +157,8 @@ def num_input_validation(prompt_string: str, ls: range or list) -> int:
 
 
 def select_again(prompt_string: str) -> bool:
-    selection = input(f"{prompt_string} If yes type Y otherwise hit enter to continue: ").strip().lower()
+    selection = input(
+        f"{Bcolors.INFO}{prompt_string} If yes type Y otherwise hit enter to continue: {Bcolors.END}").strip().lower()
     if selection == "y":
         return True
     return False
@@ -208,40 +243,51 @@ def game():
 
 
 def get_customer_data() -> dict:
-    guest_first_name = name_validation("Write customer's first name: ")
-    guest_last_name = name_validation("Write customer's last name: ")
-    #TODO fix the address
-    user_address = input("Write the customer's address: ")
+    guest_first_name = name_validation("Enter your first name: ")
+    guest_last_name = name_validation("Enter your last name: ")
+
+    user_address = input(
+        "Enter your address, including the street, city, state/province, and country in one line: ").strip()
+
+    # Validate user address
+    while len(user_address) < 3 or len(user_address) > 170:
+        print("Please enter a valid address that is between 3 and 170 characters.")
+        user_address = input("Please enter your address, including the street, city, and state/province in one line: ")
+    email_address = check_email("Enter your email address: ")
+
     checkin_date = date_validation("Please enter the check-in date following this format dd-mm-yyyy: ", "check-in", "")
     checkout_date = date_validation("Please enter the check-out date following this format dd-mm-yyyy: ", "check-out",
                                     checkin_date)
     night_stay = (checkout_date - checkin_date).days
+    cls()
 
     print("\n** Customer's entered data **\n")
-
     print(f"Customer First Name: {guest_first_name}")
     print(f"Customer Last Name: {guest_last_name}")
     print(f"Customer Address: {user_address}")
-    print(
-        f"Check-in Date: {checkin_date.day}-{checkin_date.month}-{checkin_date.year}")
-    print(
-        f"Check-out Date: {checkout_date.day}-{checkout_date.month}-{checkout_date.year}")
+    print(f"Check-in Date: {checkin_date.day}-{checkin_date.month}-{checkin_date.year}")
+    print(f"Check-out Date: {checkout_date.day}-{checkout_date.month}-{checkout_date.year}")
 
     if select_again("Do you want to edit customer's details? "):
         get_customer_data()
 
-    return {"first_name": guest_first_name, "last_name": guest_last_name, "user_address": user_address,
-            "checkin_date": checkin_date,
-            "checkout_date": checkout_date, "nights_spent": night_stay}
+    user_collected_data = {"first_name": guest_first_name, "last_name": guest_last_name, "user_address": user_address,
+                           "email_address": email_address,
+                           "checkin_date": checkin_date,
+                           "checkout_date": checkout_date, "nights_spent": night_stay}
+
+    return user_collected_data
 
 
-customer_deta = get_customer_data()
-customer_details.update(customer_deta)
+customer_data = get_customer_data()
+cls()
+customer_details.update(customer_data)
 
 ##### Functional Area #####
 
 # Get room:
 get_room = room_checkin()
+cls()
 customer_details["chosen_room"] = get_room
 customer_details["room_rent"] = customer_details["nights_spent"] * get_room["price"]
 bill["room_rent"] = customer_details["nights_spent"] * get_room["price"]
