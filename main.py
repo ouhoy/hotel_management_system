@@ -15,20 +15,6 @@ art = """
 print(art)
 
 
-def check_email(prompt_string: str) -> str:
-    email = input(prompt_string)
-    pat = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
-    if re.match(pat, email):
-        return email
-    else:
-        print("Please enter a valid email.")
-        return check_email(prompt_string)
-
-
-def cls():
-    os.system('cls' if os.name == 'nt' else 'clear')
-
-
 class Bcolors:
     HEADER = '\033[95m'
     INFO = '\033[94m'
@@ -41,6 +27,7 @@ class Bcolors:
     UNDERLINE = '\033[4m'
 
 
+# Customer Data
 customer_details = {
     "stay_duration": 0,
     "nights_spent": 0,
@@ -51,11 +38,7 @@ customer_details = {
     }
 
 }
-ROOM_SERVICE_COST_PER_DAY = 2
-hotel_services = ["Order food", "Do laundry", "Play Game", "Print the bill"]
-hotel_is_operating = True
-
-# TODO follow the data:
+total = 0
 bill = {
     "room_rent": 0,
     "room_service": 0,
@@ -67,10 +50,9 @@ bill = {
 
 }
 
-total = 0
+ROOM_SERVICE_COST_PER_DAY = 2
 
-# TODO: 3) Add a room number
-
+# Hotel Services
 room_types = [{"item": "Single Room", "price": 8},
               {"item": "Studio Room", "price": 15},
               {"item": "Deluxe Room", "price": 24},
@@ -86,37 +68,57 @@ laundry_types = [{"item": "Normal laundry", "price": 2},
                  {"item": "Uniform laundry", "price": 10}, ]
 game_selection = [{"item": "bowling", "price": 15}, {"item": "Billiard", "price": 20},
                   {"item": "Mini-golf", "price": 35}]
+hotel_services = ["Order Food", "Do Laundry", "Play Game", "Check Out and Print The Total Bill"]
+hotel_is_operating = True
+
+text_seperator = "-"
+
+
+# TODO: 3) Add a room number
 
 
 # Data validation functions
 
-# TODO color error validation
+def check_email(prompt_string: str) -> str:
+    email = input(prompt_string)
+    pat = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
+    if re.match(pat, email):
+        return email
+    else:
+        print(f"Please enter a valid email.")
+        return check_email(prompt_string)
+
+
+def cls():
+    os.system('cls' if os.name == 'nt' else 'clear')
+
 
 def name_validation(prompt_string: str) -> str:
     name = input(prompt_string).lower().strip()
 
     # Check if name is empty
     if not name:
-        print("Please enter a valid name")
+        print(f"{Bcolors.WARNING}Please enter a valid name{Bcolors.END}")
         return name_validation(prompt_string)
 
     # Check if name includes alphabetical characters only
     if not name.replace(" ", "").isalpha():
-        print("Make sure that your name does not contain any numbers or symbols.")
+        print(f"{Bcolors.WARNING}Make sure that your name does not contain any numbers or symbols.{Bcolors.END}")
         return name_validation(prompt_string)
 
     # Check the length of the name
     if len(name) > 64:
-        print("The entered name is too long, please enter a valid name that doe not exceed 64 characters in count.")
+        print(
+            f"{Bcolors.WARNING}The entered name is too long, please enter a valid name that doe not exceed 64 characters in count.{Bcolors.END}")
         return name_validation(prompt_string)
     if len(name) < 1:
-        print("The entered name is too short, please enter a valid name that doe not go under 1 character in count.")
+        print(
+            f"{Bcolors.WARNING}The entered name is too short, please enter a valid name that doe not go under 1 character in count.{Bcolors.END}")
         return name_validation(prompt_string)
 
     return name
 
 
-# TODO color error validation
 def date_validation(prompt_string: str, date_type: str, checkin_date: datetime = None) -> datetime:
     date = input(prompt_string).strip().split("-")
     year_expected_length = 4
@@ -134,16 +136,16 @@ def date_validation(prompt_string: str, date_type: str, checkin_date: datetime =
 
     # Check if the entered year follows the format of YYYY
     if len(str(year)) != year_expected_length:
-        print("Please put in the year in this format yyyy")
+        print(f"{Bcolors.WARNING}Please put in the year in this format yyyy{Bcolors.END}")
         return date_validation(prompt_string, date_type, checkin_date)
 
     # If the user checked for an earlier check-out date from the check-in date
-    # TODO check stay duration
     if date_type == "check-out":
         try:
             dates = datetime.date(year, month, day) - checkin_date
             if 0 > dates.days:
-                print(f"Enter a valid date at least one day from the check-in date: {checkin_date}")
+                print(
+                    f"{Bcolors.WARNING}Enter a valid date at least one day from the check-in date: {checkin_date}{Bcolors.END}")
                 return date_validation(prompt_string, date_type, checkin_date)
         except Exception as e:
             print(e)
@@ -153,7 +155,7 @@ def date_validation(prompt_string: str, date_type: str, checkin_date: datetime =
 
         # If the user checked for an earlier date from the current date
         if date_calc.days > 0:
-            print(f"Enter a valid date up to one day from today")
+            print(f"{Bcolors.WARNING}Enter a valid date up to one day from today{Bcolors.END}")
             return date_validation(prompt_string, date_type, checkin_date)
     except Exception as e:
         print(e)
@@ -161,7 +163,6 @@ def date_validation(prompt_string: str, date_type: str, checkin_date: datetime =
     return datetime.date(year, month, day)
 
 
-# TODO color error validation
 def num_input_validation(prompt_string: str, ls: range or list) -> int:
     num = input(prompt_string).strip()
 
@@ -172,7 +173,7 @@ def num_input_validation(prompt_string: str, ls: range or list) -> int:
         elif not ls:
             return int(num)
 
-    print(f"Please put a valid number")
+    print(f"{Bcolors.WARNING}Please put a valid number{Bcolors.END}")
     return num_input_validation(prompt_string, ls)
 
 
@@ -197,7 +198,7 @@ def get_service(prompt_string: str, ls: list, item_quantity_type: str, quantity_
 
     chosen_item = num_input_validation(prompt_string, ls)
     quantity = num_input_validation(
-        f"Enter how many {item_quantity_type} you want, nothing more than {quantity_limit}",
+        f"Enter how many {item_quantity_type} you want, nothing more than {quantity_limit}: ",
         range(1, quantity_limit + 1)) + 1
 
     item = ls[chosen_item]['item']
@@ -248,7 +249,8 @@ def room_checkin() -> dict:
         return room_checkin()
 
     # Room bill
-    print("** Rent Details **")
+    print(f"{text_seperator * 35} Rent Details {text_seperator * 35}")
+
     print(f'Chosen Room Type: {room_types[chosen_item]["item"]}')
     print(f'Price per night: ${room_types[chosen_item]["price"]}')
     print(f'Stay duration: {customer_details["stay_duration"]} days')
@@ -266,17 +268,14 @@ def get_food() -> dict:
         f"Kindly make your selection by inputting a number between 1 and {len(food_menu)} from the food menu options provided: ",
         ls=food_menu, item_quantity_type="dishes", quantity_limit=3)
 
-    # The print the bill
+    # Print the bill
     cls()
-
-    print("** Restaurant Bill **")
+    print(f"{text_seperator * 35} Restaurant Bill {text_seperator * 35}")
     print(f"Chosen dish: {user_order['item']}, - ${user_order['price']}")
     print(f"Quantity: {user_order['quantity']}")
     print(f"Total: {user_order['service_total']}")
 
     return user_order
-    # TODO: 1)  Don't forget the tep as an additional charge
-
 
 def laundry() -> dict:
     print("We offer four types of laundry")
@@ -285,8 +284,8 @@ def laundry() -> dict:
         f"Please enter the number of the desired laundry type from 1 to {len(laundry_types)}: ",
         ls=laundry_types, item_quantity_type="cloths", quantity_limit=6)
     # Laundry bill
-    cls()
-    print("** Laundry Bill **")
+
+    print(f"{text_seperator * 35} Laundry Bill {text_seperator * 35}")
     print(f"Chosen laundry type: {user_order['item']}, - ${user_order['price']}")
     print(f"Quantity: {user_order['quantity']}")
     print(f"Total: {user_order['service_total']}")
@@ -300,9 +299,8 @@ def game():
         ls=game_selection, item_quantity_type="hours", quantity_limit=2)
 
     # Game bill
-    cls()
 
-    print("** Game Bill **")
+    print(f"{text_seperator * 35} Game Bill {text_seperator * 35}")
     print(f"Played Game: {user_order['item']}, - ${user_order['price']}")
     print(f"Hours: {user_order['quantity']}")
     print(f"Total: {user_order['service_total']}")
@@ -412,10 +410,12 @@ while hotel_is_operating:
     # Getting services
     while True:
 
+        # Print Available Hotel Services
         for i in range(len(hotel_services)):
             print(f"{i + 1}) {hotel_services[i]} ")
+
         chosen_service = num_input_validation(
-            f"between 1 and {len(hotel_services)} corresponding to the desired room type from the list : ",
+            f"between 1 and {len(hotel_services)} corresponding to the desired service from the list : ",
             ls=hotel_services)
 
         # Order food
@@ -424,7 +424,6 @@ while hotel_is_operating:
             customer_details["services"]["ordered_food"].append(ordered_food)
             bill["restaurant"] += ordered_food["service_total"]
             if select_again("Would you like to order again? "):
-
                 ordered_food = get_food()
                 customer_details["services"]["ordered_food"].append(ordered_food)
                 bill["restaurant"] += ordered_food["price"]
@@ -462,9 +461,8 @@ while hotel_is_operating:
             "services": {
                 "ordered_food": [],
                 "laundry": [],
-                "played_games": []
+                "played_games": [],
             }
-
         }
         bill = {
             "room_rent": 0,
@@ -473,8 +471,7 @@ while hotel_is_operating:
             "restaurant_tips": 0,
             "laundry": 0,
             "game": 0,
-            "TAX": 0
-
+            "TAX": 0,
         }
         total = 0
         continue
