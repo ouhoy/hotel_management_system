@@ -42,11 +42,13 @@ class Bcolors:
 
 
 customer_details = {
+    "stay_duration": 0,
     "nights_spent": 0,
     "ordered_food": [],
     "laundry": []
 
 }
+ROOM_SERVICE_COST_PER_DAY = 2
 
 # TODO follow the data:
 bill = {
@@ -62,6 +64,8 @@ bill = {
 
 total = 0
 # TODO: 3) fix lang
+# TODO: 3) Add a room number
+
 room_types = [{"item": "roomTypeOne", "price": 8},
               {"item": "roomTypeTwo", "price": 15},
               {"item": "roomTypeThree", "price": 24},
@@ -83,6 +87,8 @@ laundry_types = [{"item": "Normal laundry", "price": 2},
 
 def name_validation(prompt_string: str) -> str:
     name = input(prompt_string).lower().strip()
+
+    # Check if name is empty
     if not name:
         print("Please enter a valid name")
         return name_validation(prompt_string)
@@ -92,6 +98,7 @@ def name_validation(prompt_string: str) -> str:
         print("Make sure that your name does not contain any numbers or symbols.")
         return name_validation(prompt_string)
 
+    # Check the length of the name
     if len(name) > 64:
         print("The entered name is too long, please enter a valid name that doe not exceed 64 characters in count.")
         return name_validation(prompt_string)
@@ -103,9 +110,8 @@ def name_validation(prompt_string: str) -> str:
 
 
 # TODO color error validation
-def date_validation(prompt_string: str, date_type: str, checkin_date: str or datetime) -> datetime:
+def date_validation(prompt_string: str, date_type: str, checkin_date: datetime = None) -> datetime:
     date = input(prompt_string).strip().split("-")
-
     year_expected_length = 4
 
     # Validate inputs' data type
@@ -114,14 +120,17 @@ def date_validation(prompt_string: str, date_type: str, checkin_date: str or dat
             print(
                 f"{Bcolors.WARNING}Please, make sure that the {date_type} does not contain any characters or spaces. {Bcolors.END}")
             return date_validation(prompt_string, date_type, checkin_date)
+
     day = int(date[0])
     month = int(date[1])
     year = int(date[2])
+
+    # Check if the entered year follows the format of YYYY
     if len(str(year)) != year_expected_length:
         print("Please put in the year in this format yyyy")
         return date_validation(prompt_string, date_type, checkin_date)
 
-    # If the user checked for an earlier date from the check-in date
+    # If the user checked for an earlier check-out date from the check-in date
     # TODO check stay duration
     if date_type == "check-out":
         try:
@@ -134,6 +143,8 @@ def date_validation(prompt_string: str, date_type: str, checkin_date: str or dat
             return date_validation(prompt_string, date_type, checkin_date)
     try:
         date_calc = datetime.date.today() - datetime.date(year, month, day)
+
+        # If the user checked for an earlier date from the current date
         if date_calc.days > 0:
             print(f"Enter a valid date up to one day from today")
             return date_validation(prompt_string, date_type, checkin_date)
@@ -146,6 +157,8 @@ def date_validation(prompt_string: str, date_type: str, checkin_date: str or dat
 # TODO color error validation
 def num_input_validation(prompt_string: str, ls: range or list) -> int:
     num = input(prompt_string).strip()
+
+    # Check if the entered number is numeric and is in the list
     if num.isnumeric():
         if ls and int(num) in range(1, len(ls) + 1):
             return int(num) - 1
@@ -177,7 +190,6 @@ def room_checkin() -> dict:
         "In order to make your selection, please input a number between 1 and 4 corresponding to the "
         "desired room type from the list: ",
         ls=room_types)
-    # TODO: 2) Don't forget the room service as an additional charge
 
     # Confirm user choice
     print("You have selected: ")
@@ -185,12 +197,13 @@ def room_checkin() -> dict:
     print(f'Price per night: ${room_types[chosen_item]["price"]}')
     if select_again("Do you want to edit your inputs? "):
         return room_checkin()
+
     # Room bill
     print("** Rent Details **")
     print(f'Chosen Room Type: {room_types[chosen_item]["item"]}')
     print(f'Price per night: ${room_types[chosen_item]["price"]}')
-    print(f'Stay duration: {customer_details["nights_spent"]} days')
-    print(f'Total:, ${room_types[chosen_item]["price"] * customer_details["nights_spent"]} ')
+    print(f'Stay duration: {customer_details["stay_duration"]} days')
+    print(f'Total:, ${room_types[chosen_item]["price"] * customer_details["stay_duration"]} ')
     return room_types[chosen_item]
 
 
@@ -255,10 +268,11 @@ def get_customer_data() -> dict:
         user_address = input("Please enter your address, including the street, city, and state/province in one line: ")
     email_address = check_email("Enter your email address: ")
 
-    checkin_date = date_validation("Please enter the check-in date following this format dd-mm-yyyy: ", "check-in", "")
+    checkin_date = date_validation("Please enter the check-in date following this format dd-mm-yyyy: ", "check-in")
     checkout_date = date_validation("Please enter the check-out date following this format dd-mm-yyyy: ", "check-out",
                                     checkin_date)
-    night_stay = (checkout_date - checkin_date).days
+    stay_duration = (checkout_date - checkin_date).days
+
     cls()
 
     print("\n** Customer's entered data **\n")
@@ -268,13 +282,13 @@ def get_customer_data() -> dict:
     print(f"Check-in Date: {checkin_date.day}-{checkin_date.month}-{checkin_date.year}")
     print(f"Check-out Date: {checkout_date.day}-{checkout_date.month}-{checkout_date.year}")
 
-    if select_again("Do you want to edit customer's details? "):
-        get_customer_data()
+    if select_again("Do you want to edit your personal information? "):
+        return get_customer_data()
 
     user_collected_data = {"first_name": guest_first_name, "last_name": guest_last_name, "user_address": user_address,
                            "email_address": email_address,
                            "checkin_date": checkin_date,
-                           "checkout_date": checkout_date, "nights_spent": night_stay}
+                           "checkout_date": checkout_date, "stay_duration": stay_duration}
 
     return user_collected_data
 
@@ -285,12 +299,13 @@ customer_details.update(customer_data)
 
 ##### Functional Area #####
 
-# Get room:
+# Get a room:
 get_room = room_checkin()
 cls()
 customer_details["chosen_room"] = get_room
-customer_details["room_rent"] = customer_details["nights_spent"] * get_room["price"]
-bill["room_rent"] = customer_details["nights_spent"] * get_room["price"]
+customer_details["room_rent"] = customer_details["stay_duration"] * get_room["price"]
+bill["room_rent"] = customer_details["stay_duration"] * get_room["price"]
+bill["room_service"] = customer_details["nights_spent"] * ROOM_SERVICE_COST_PER_DAY
 
 while True:
     # TODO fix lang here
@@ -336,12 +351,13 @@ def print_total_cost():
         f"Check-out Date: {customer_details['checkout_date'].day}-{customer_details['checkout_date'].month}-{customer_details['checkout_date'].year}")
     # TODO fix this
     print("Chosen Room Type: ", customer_details["chosen_room"])
-    print("Number of nights spent: ", customer_details["nights_spent"])
+    print("Number of nights spent: ", customer_details["stay_duration"])
     # Customer's Bill
     print("\n**** Customer's Bill ****\n")
 
     # room
     print("Room rent: ", bill["room_rent"])
+    print("Room service: ", bill["room_service"])
     # restaurant
     print("\nRestaurant bill: ")
     for order in customer_details["ordered_food"]:
