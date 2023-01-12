@@ -35,7 +35,8 @@ customer_details = {
         "ordered_food": [],
         "laundry": [],
         "played_games": []
-    }
+    },
+
 
 }
 total = 0
@@ -206,6 +207,7 @@ def get_service(prompt_string: str, ls: list, item_quantity_type: str, quantity_
     service_total = quantity * ls[chosen_item]["price"]
 
     cls()
+
     # Confirm user choice
     print("You have selected: ")
     print(f"Chosen item: {item}, - ${item_price}")
@@ -293,7 +295,7 @@ def laundry() -> dict:
     return user_order
 
 
-def game():
+def game() -> dict:
     user_order = get_service(
         f"Please enter the number of the desired game type from 1 to {len(game_selection)}: ",
         ls=game_selection, item_quantity_type="hours", quantity_limit=2)
@@ -353,7 +355,7 @@ def print_total_cost():
     print("Customer Last Name: ", customer_details["last_name"])
     print("Customer Address: ", customer_details["user_address"])
     print(
-        f"Check-in Date: {customer_details['checkin_date'].day}-{customer_details['checkin_date'].month}-{customer_details['checkin_date'].year}")
+f"Check-in Date: {customer_details['checkin_date'].day}-{customer_details['checkin_date'].month}-{customer_details['checkin_date'].year}")
     print(
         f"Check-out Date: {customer_details['checkout_date'].day}-{customer_details['checkout_date'].month}-{customer_details['checkout_date'].year}")
     # TODO fix this
@@ -398,7 +400,6 @@ while hotel_is_operating:
 
     # Get and save the chosen room:
     get_room = room_checkin()
-    cls()
 
     customer_details["chosen_room"] = get_room
     customer_details["room_rent"] = customer_details["stay_duration"] * get_room["price"]
@@ -451,8 +452,9 @@ while hotel_is_operating:
     for expense in bill:
         total += bill[expense]
 
-    print(customer_details)
+
     print_total_cost()
+
     if select_again("Would you like to reserve again?"):
         cls()
         customer_details = {
