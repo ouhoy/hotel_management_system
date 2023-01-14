@@ -12,20 +12,6 @@ art = """
                                                         __/ |                                     __/ |                      
                                                        |___/                                     |___/                       
 """
-print(art)
-
-
-class Bcolors:
-    HEADER = '\033[95m'
-    INFO = '\033[94m'
-    OK_CYAN = '\033[96m'
-    OK_GREEN = '\033[92m'
-    WARNING = '\033[93m'
-    FAIL = '\033[91m'
-    END = '\033[0m'
-    BOLD = '\033[1m'
-    UNDERLINE = '\033[4m'
-
 
 # Customer Data
 customer_details = {
@@ -36,7 +22,6 @@ customer_details = {
         "laundry": [],
         "played_games": []
     },
-
 
 }
 total = 0
@@ -52,6 +37,7 @@ bill = {
 }
 
 ROOM_SERVICE_COST_PER_DAY = 2
+TAX_RATE = 0.03
 
 # Hotel Services
 room_types = [{"item": "Single Room", "price": 8},
@@ -69,28 +55,46 @@ laundry_types = [{"item": "Normal laundry", "price": 2},
                  {"item": "Uniform laundry", "price": 10}, ]
 game_selection = [{"item": "bowling", "price": 15}, {"item": "Billiard", "price": 20},
                   {"item": "Mini-golf", "price": 35}]
-hotel_services = ["Order Food", "Do Laundry", "Play Game", "Check Out and Print The Total Bill"]
+hotel_services = ["Order Food", "Do Laundry", "Play Games", "Check Out and Print The Total Bill"]
 hotel_is_operating = True
 
 text_seperator = "-"
 
 
-# TODO: 3) Add a room number
+# ------------- SUPPORT FUNCTIONS -------------
+
+# Used to give a color to the output
+class Bcolors:
+    HEADER = '\033[95m'
+    INFO = '\033[94m'
+    OK_CYAN = '\033[96m'
+    OK_GREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    END = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
 
 
-# Data validation functions
-
+# Validate the email
 def check_email(prompt_string: str) -> str:
     email = input(prompt_string)
     pat = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
-    if re.match(pat, email):
-        return email
-    else:
-        print(f"Please enter a valid email.")
+
+    # Validate the length of the email
+    if len(email) > 150:
+        print(f"Please enter a valid email. that does not exceed 150 character limit.")
         return check_email(prompt_string)
 
+    # Validate Email format
+    if re.match(pat, email):
+        return email
 
-def cls():
+    print(f"Please enter a valid email.")
+    return check_email(prompt_string)
+
+
+def clear_console():
     os.system('cls' if os.name == 'nt' else 'clear')
 
 
@@ -120,6 +124,7 @@ def name_validation(prompt_string: str) -> str:
     return name
 
 
+# Validate the check-in and check-out dates
 def date_validation(prompt_string: str, date_type: str, checkin_date: datetime = None) -> datetime:
     date = input(prompt_string).strip().split("-")
     year_expected_length = 4
@@ -128,7 +133,9 @@ def date_validation(prompt_string: str, date_type: str, checkin_date: datetime =
     for n in date:
         if not n.isnumeric():
             print(
-                f"{Bcolors.WARNING}Please, make sure that the {date_type} does not contain any characters or spaces. {Bcolors.END}")
+                f"{Bcolors.WARNING}"
+                f"Please, make sure that the {date_type} does not contain any characters or spaces and follows the given format."
+                f"{Bcolors.END}")
             return date_validation(prompt_string, date_type, checkin_date)
 
     day = int(date[0])
@@ -144,7 +151,7 @@ def date_validation(prompt_string: str, date_type: str, checkin_date: datetime =
     if date_type == "check-out":
         try:
             dates = datetime.date(year, month, day) - checkin_date
-            if 0 > dates.days:
+            if 0 >= dates.days:
                 print(
                     f"{Bcolors.WARNING}Enter a valid date at least one day from the check-in date: {checkin_date}{Bcolors.END}")
                 return date_validation(prompt_string, date_type, checkin_date)
@@ -164,6 +171,7 @@ def date_validation(prompt_string: str, date_type: str, checkin_date: datetime =
     return datetime.date(year, month, day)
 
 
+# Validate the entered number
 def num_input_validation(prompt_string: str, ls: range or list) -> int:
     num = input(prompt_string).strip()
 
@@ -188,11 +196,11 @@ def select_again(prompt_string: str) -> bool:
 
 def print_priced_items(ls: list):
     for item in range(len(ls)):
-        print(f'{item + 1}) {ls[item]["item"]} - ${ls[item]["price"]}')
+        print(f'{item + 1}) {ls[item]["item"]} ${ls[item]["price"]}')
 
 
 def get_service(prompt_string: str, ls: list, item_quantity_type: str, quantity_limit: int) -> dict:
-    cls()
+    clear_console()
 
     # Print all the items in the menu
     print_priced_items(ls)
@@ -206,13 +214,13 @@ def get_service(prompt_string: str, ls: list, item_quantity_type: str, quantity_
     item_price = ls[chosen_item]['price']
     service_total = quantity * ls[chosen_item]["price"]
 
-    cls()
+    clear_console()
 
     # Confirm user choice
     print("You have selected: ")
-    print(f"Chosen item: {item}, - ${item_price}")
+    print(f"Chosen item: {item}, ${item_price}")
     print(f"Number of {item_quantity_type}: {quantity}")
-    print(f"Total: {service_total}")
+    print(f"Total: ${service_total}")
 
     if select_again("Do you want to edit your inputs? "):
         return get_service(prompt_string, ls, item_quantity_type, quantity_limit)
@@ -220,27 +228,32 @@ def get_service(prompt_string: str, ls: list, item_quantity_type: str, quantity_
     return {"item": item, "price": item_price, "quantity": quantity, "service_total": service_total}
 
 
-# Hotel services functions
+# ------------- HOTEL FUNCTIONS -------------
 
 def room_checkin() -> dict:
-    cls()
+    clear_console()
+
     print("Our luxurious accommodations include a selection of four opulent room types to choose from: ")
+
     print_priced_items(room_types)
     chosen_item = num_input_validation(
         f"In order to make your selection, please input a number between 1 and {len(room_types)} corresponding to the "
         "desired room type from the list: ",
         ls=room_types)
 
+    # Get and validate the number of nights spent
+    day_or_days = "days" if customer_details['stay_duration'] > 1 else "day"
     nights_spent = num_input_validation("Enter the number of nights spent: ", False)
 
     while nights_spent > customer_details["stay_duration"]:
         print(
-            f"The number of nights you have entered is {nights_spent} and your stay duration is {customer_details['stay_duration']} days which does not match.")
+            f"The number of nights you have entered is {nights_spent} and your stay duration is {customer_details['stay_duration']} {day_or_days} which does not match.")
         nights_spent = num_input_validation("Enter the number of nights spent: ", False)
     if nights_spent < customer_details["stay_duration"]:
-        cls()
+        clear_console()
+
         print(
-            f"The number of nights spent is: {nights_spent} night. You will be billed based on the stay duration which is {customer_details['stay_duration']} days ")
+            f"The number of nights spent is: {nights_spent}. You will be billed based on the stay duration which is {customer_details['stay_duration']} {day_or_days}")
 
     # Confirm user choice
     print("You have selected: ")
@@ -266,21 +279,23 @@ def room_checkin() -> dict:
 
 
 def get_food() -> dict:
+    print(text_seperator * 20, "Welcome to our hotel's fancy restaurant", text_seperator * 20, "\n")
     user_order = get_service(
         f"Kindly make your selection by inputting a number between 1 and {len(food_menu)} from the food menu options provided: ",
         ls=food_menu, item_quantity_type="dishes", quantity_limit=3)
 
     # Print the bill
-    cls()
+    clear_console()
     print(f"{text_seperator * 35} Restaurant Bill {text_seperator * 35}")
-    print(f"Chosen dish: {user_order['item']}, - ${user_order['price']}")
+    print(f"Chosen dish: {user_order['item']}, ${user_order['price']}")
     print(f"Quantity: {user_order['quantity']}")
-    print(f"Total: {user_order['service_total']}")
+    print(f"Total: ${user_order['service_total']}")
 
     return user_order
 
+
 def laundry() -> dict:
-    print("We offer four types of laundry")
+    print(text_seperator * 20, "We offer four types of laundry", text_seperator * 20, "\n")
 
     user_order = get_service(
         f"Please enter the number of the desired laundry type from 1 to {len(laundry_types)}: ",
@@ -288,14 +303,15 @@ def laundry() -> dict:
     # Laundry bill
 
     print(f"{text_seperator * 35} Laundry Bill {text_seperator * 35}")
-    print(f"Chosen laundry type: {user_order['item']}, - ${user_order['price']}")
+    print(f"Chosen laundry type: {user_order['item']}, ${user_order['price']}")
     print(f"Quantity: {user_order['quantity']}")
-    print(f"Total: {user_order['service_total']}")
+    print(f"Total: ${user_order['service_total']}")
 
     return user_order
 
 
 def game() -> dict:
+    print(text_seperator * 20, "We offer good choices of games", text_seperator * 20, "\n")
     user_order = get_service(
         f"Please enter the number of the desired game type from 1 to {len(game_selection)}: ",
         ls=game_selection, item_quantity_type="hours", quantity_limit=2)
@@ -303,9 +319,9 @@ def game() -> dict:
     # Game bill
 
     print(f"{text_seperator * 35} Game Bill {text_seperator * 35}")
-    print(f"Played Game: {user_order['item']}, - ${user_order['price']}")
+    print(f"Played Game: {user_order['item']}, ${user_order['price']}")
     print(f"Hours: {user_order['quantity']}")
-    print(f"Total: {user_order['service_total']}")
+    print(f"Total: ${user_order['service_total']}")
     return user_order
 
 
@@ -327,7 +343,7 @@ def get_customer_data() -> dict:
                                     checkin_date)
     stay_duration = (checkout_date - checkin_date).days
 
-    cls()
+    clear_console()
 
     print("\n** Customer's entered data **\n")
     print(f"Customer First Name: {guest_first_name}")
@@ -348,18 +364,18 @@ def get_customer_data() -> dict:
 
 
 def print_total_cost():
-    cls()
+    clear_console()
     # Customer details
     print("\n**** Customer details ****\n")
     print("Customer First Name: ", customer_details["first_name"])
     print("Customer Last Name: ", customer_details["last_name"])
     print("Customer Address: ", customer_details["user_address"])
     print(
-f"Check-in Date: {customer_details['checkin_date'].day}-{customer_details['checkin_date'].month}-{customer_details['checkin_date'].year}")
+        f"Check-in Date: {customer_details['checkin_date'].day}-{customer_details['checkin_date'].month}-{customer_details['checkin_date'].year}")
     print(
         f"Check-out Date: {customer_details['checkout_date'].day}-{customer_details['checkout_date'].month}-{customer_details['checkout_date'].year}")
-    # TODO fix this
-    print("Chosen Room Type: ", customer_details["chosen_room"])
+    print(
+        f"Chosen Room Type: {customer_details['chosen_room']['item']} ${customer_details['chosen_room']['price']}")
     print("Number of nights spent: ", customer_details["nights_spent"])
     print("Stay Duration: ", customer_details["stay_duration"])
 
@@ -367,32 +383,36 @@ f"Check-in Date: {customer_details['checkin_date'].day}-{customer_details['check
     print(f"\n**** Customer's Bill ****\n")
 
     # room
-    print("Room rent: ", bill["room_rent"])
-    print("Room service: ", bill["room_service"])
+    print(f"Room rent: ${bill['room_rent']}")
+    print(f"Room service: ${bill['room_service']}")
 
-    # restaurant
-    print("\nRestaurant bill: ")
-    for order in customer_details["services"]["ordered_food"]:
-        print(f"-{order['item']} - ${order['price']}. x{order['quantity']} ")
-    print("Restaurant total: ", bill["restaurant"])
+    # Print restaurant bill if available
+    if customer_details["services"]["ordered_food"]:
+        print("\nRestaurant bill: ")
+        for order in customer_details["services"]["ordered_food"]:
+            print(f"-{order['item']} ${order['price']}. x{order['quantity']} ")
+        print("Restaurant total: $", bill["restaurant"])
 
-    # laundry
-    print("\nLaundry bill: ")
-    for item in customer_details["services"]["laundry"]:
-        print(f"-{item['item']}, {item['price']}. x{item['quantity']}")
-    print("Laundry total: ", bill["laundry"])
+    # Print laundry bill if available
+    if customer_details["services"]["laundry"]:
+        print("\nLaundry bill: ")
+        for item in customer_details["services"]["laundry"]:
+            print(f"-{item['item']}, ${item['price']}. x{item['quantity']}")
+        print("Laundry total: $", bill["laundry"])
 
-    # Games
-    print("\nGame bill: ")
-    for item in customer_details["services"]["played_games"]:
-        print(f"-{item['item']}, {item['price']}. {item['quantity']}Hr")
-    print("Laundry total: ", bill["game"])
+    # Print games bill if available
+    if customer_details["services"]["played_games"]:
+        print("\nGame bill: ")
+        for item in customer_details["services"]["played_games"]:
+            print(f"-{item['item']}, ${item['price']} Per Hour. {item['quantity']}Hr")
+        print("Laundry total: $", bill["game"])
 
-    # Total
-    print(f"\nYour total is: ", total)
+    # Print the Total
+    print(f"\nYour total is: ${total}")
 
 
 while hotel_is_operating:
+    print(art)
 
     # Get and save customer information
     customer_data = get_customer_data()
@@ -448,15 +468,19 @@ while hotel_is_operating:
         if chosen_service == 3:
             break
 
-    # Calculating the total cost
+    # Calculating Taxes and the total cost
     for expense in bill:
         total += bill[expense]
 
+    bill["TAX"] = round(total * TAX_RATE, 2)
+    total += bill["TAX"]
 
     print_total_cost()
 
     if select_again("Would you like to reserve again?"):
-        cls()
+        clear_console()
+
+        # Resetting Customer Data
         customer_details = {
             "stay_duration": 0,
             "nights_spent": 0,
@@ -478,7 +502,7 @@ while hotel_is_operating:
         total = 0
         continue
     else:
-        cls()
+        clear_console()
         hotel_is_operating: False
         print("Thank you for choosing our hotel service!")
         print("Goodbye!!")
