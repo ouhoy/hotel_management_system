@@ -129,6 +129,9 @@ def date_validation(prompt_string: str, date_type: str, checkin_date: datetime =
     date = input(prompt_string).strip().split("-")
     year_expected_length = 4
 
+    day = 0
+    month = 0
+    year = 0
     # Validate inputs' data type
     for n in date:
         if not n.isnumeric():
@@ -138,9 +141,14 @@ def date_validation(prompt_string: str, date_type: str, checkin_date: datetime =
                 f"{Bcolors.END}")
             return date_validation(prompt_string, date_type, checkin_date)
 
-    day = int(date[0])
-    month = int(date[1])
-    year = int(date[2])
+    try:
+        day = int(date[0])
+        month = int(date[1])
+        year = int(date[2])
+    except Exception as error:
+        print("Please enter a valid date following this format dd-mm-yyyy")
+        print(error)
+        date_validation(prompt_string, date_type, checkin_date)
 
     # Check if the entered year follows the format of YYYY
     if len(str(year)) != year_expected_length:
